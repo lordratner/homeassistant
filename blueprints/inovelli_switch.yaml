@@ -1,1 +1,87 @@
-.
+blueprint:
+  name: Inovelli Switch Automation (Zigbee2MQTT)
+  description: Provide on/off and dimming control for a smart light/bulb. You will need the MQTT topic for the switch as well as the script used for the dimming logic. 
+  domain: automation
+  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/refs/heads/main/blueprints/inovelli_switch.yaml
+  input:
+    mqtt_topic:
+      name: Switch MQTT Topic
+      description: The full MQTT topic where switch actions are published. Uses the Friendly Name in Zigbee2MQTT for the device
+      selector:
+        text:
+      default: "zigbee2mqtt/SWITCH TOPIC HERE/action" # Optional: provide a default value
+      required: true
+    light_entity:
+      name: Light Entity
+      description: Select the light entity that will be controlled by the switch. Note: This does not create a Zigbee binding.
+      selector:
+        entity:
+          domain: light
+      required: true
+    dimming_script:
+      name: Dimming Script
+      description: The script use to control dimming the light. Called when the paddle is held up (brighter) or down (dimmer).
+      selector:
+        entity:
+          domain: script
+      required: true
+triggers:
+  - trigger: mqtt
+    topic: input !mqtt_topic
+conditions:
+  - condition: template
+    value_template: "{{ trigger.payload is not none and trigger.payload | length > 0 }}"
+    enabled: true
+actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload == 'up_single' }}"
+        sequence:
+          - action: light.turn_on
+            data: {}
+            target:
+              entity_id: input !light_entity
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload == 'down_single' }}"
+        sequence:
+          - action: light.turn_off
+            data:
+              transition: 2
+            target:
+              entity_id: input !light_entity
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload == 'up_held' }}"
+        sequence:
+          - target:
+              entity_id: input !dimming_script
+            data:
+              variables:
+                light_entity: input !light_entity
+                direction: up
+            action: script.turn_on
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload == 'down_held' }}"
+        sequence:
+          - target:
+              entity_id: input !dimming_script
+            data:
+              variables:
+                light_entity: input !light_entity
+                direction: down
+            action: script.turn_on
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ trigger.payload == 'up_release' or trigger.payload ==
+              'down_release' }}
+        sequence:
+          - target:
+              entity_id: input !dimming_script
+            action: script.turn_off
+            data: {}
+mode: queued
+max: 10
