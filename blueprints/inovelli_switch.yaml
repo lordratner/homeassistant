@@ -38,7 +38,7 @@ actions:
           - action: light.turn_on
             data: {}
             target:
-              entity_id: input !light_entity
+              entity_id: !input light_entity
       - conditions:
           - condition: template
             value_template: "{{ trigger.payload == 'down_single' }}"
@@ -47,16 +47,16 @@ actions:
             data:
               transition: 2
             target:
-              entity_id: input !light_entity
+              entity_id: !input light_entity
       - conditions:
           - condition: template
             value_template: "{{ trigger.payload == 'up_held' }}"
         sequence:
           - target:
-              entity_id: input !dimming_script
+              entity_id: !input dimming_script
             data:
               variables:
-                light_entity: input !light_entity
+                light_entity: !input light_entity
                 direction: up
             action: script.turn_on
       - conditions:
@@ -64,10 +64,10 @@ actions:
             value_template: "{{ trigger.payload == 'down_held' }}"
         sequence:
           - target:
-              entity_id: input !dimming_script
+              entity_id: !input dimming_script
             data:
               variables:
-                light_entity: input !light_entity
+                light_entity: !input light_entity
                 direction: down
             action: script.turn_on
       - conditions:
@@ -77,7 +77,7 @@ actions:
               'down_release' }}
         sequence:
           - target:
-              entity_id: input !dimming_script
+              entity_id: !input dimming_script
             action: script.turn_off
             data: {}
 mode: queued
