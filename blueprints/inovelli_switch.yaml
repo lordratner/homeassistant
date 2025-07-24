@@ -13,7 +13,7 @@ blueprint:
       required: true
     light_entity:
       name: Light Entity
-      description: "Select the light entity that will be controlled by the switch. Note\: This does not create a Zigbee binding."
+      description: "Select the light entity that will be controlled by the switch. Note: This does not create a Zigbee binding."
       selector:
         entity:
           domain: light
