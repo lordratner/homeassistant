@@ -10,21 +10,18 @@ blueprint:
       selector:
         text:
       default: "zigbee2mqtt/SWITCH TOPIC HERE/action" # Optional: provide a default value
-      required: true
     light_entity:
       name: Light Entity
       description: "Select the light entity that will be controlled by the switch. Note: This does not create a Zigbee binding."
       selector:
         entity:
           domain: light
-      required: true
     dimming_script:
       name: Dimming Script
       description: "The script use to control dimming the light. Called when the paddle is held up (brighter) or down (dimmer)."
       selector:
         entity:
           domain: script
-      required: true
 triggers:
   - trigger: mqtt
     topic: input !mqtt_topic
