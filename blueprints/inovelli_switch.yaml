@@ -2,7 +2,7 @@ blueprint:
   name: Inovelli Switch Automation (Zigbee2MQTT)
   description: Provide on/off and dimming control for a smart light/bulb. You will need the MQTT topic for the switch as well as the script used for the dimming logic. 
   domain: automation
-  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/refs/heads/main/blueprints/inovelli_switch.yaml
+  source_url: https://github.com/lordratner/homeassistant/blob/main/blueprints/inovelli_switch.yaml
   input:
     mqtt_topic:
       name: Switch MQTT Topic
