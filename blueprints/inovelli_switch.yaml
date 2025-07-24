@@ -24,7 +24,7 @@ blueprint:
           domain: script
 triggers:
   - trigger: mqtt
-    topic: input !mqtt_topic
+    topic: !input mqtt_topic
 conditions:
   - condition: template
     value_template: "{{ trigger.payload is not none and trigger.payload | length > 0 }}"
