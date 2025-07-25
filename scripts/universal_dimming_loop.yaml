@@ -1,0 +1,58 @@
+alias: Universal Brighten/Dim Loop
+description: Starts a brightening or dimming loop for a specified light. Runs in parallel.
+mode: restart
+fields:
+  light_entity:
+    name: Light Entity
+    description: The light or light group to control.
+    required: true
+    example: light.living_room_lights
+    selector:
+      entity:
+        domain: light
+  direction:
+    name: Direction
+    description: Use 'up' for brightening, 'down' for dimming.
+    required: true
+    example: up
+    selector:
+      select:
+        options:
+          - up
+          - down
+sequence:
+  - variables:
+      step: "{{ int(10) }}"
+      delay: "{{ int(1) }}"
+    enabled: true
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ direction == 'up' }}"
+        sequence:
+          - repeat:
+              sequence:
+                - target:
+                    entity_id: "{{ light_entity }}"
+                  data:
+                    brightness_step_pct: "{{ step }}"
+                    transition: "{{ delay }}"
+                  action: light.turn_on
+                - delay:
+                    seconds: "{{ delay }}"
+              count: 10
+      - conditions:
+          - condition: template
+            value_template: "{{ direction == 'down' }}"
+        sequence:
+          - repeat:
+              sequence:
+                - target:
+                    entity_id: "{{ light_entity }}"
+                  data:
+                    brightness_step_pct: "{{ -step }}"
+                    transition: "{{ delay }}"
+                  action: light.turn_on
+                - delay:
+                    seconds: "{{ delay }}"
+              count: 10
