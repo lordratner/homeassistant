@@ -159,3 +159,5 @@ actions:
             target:
               entity_id: !input dimming_script
         alias: Either Button Released
+mode: queued
+max: 10
