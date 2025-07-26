@@ -134,6 +134,7 @@ actions:
           - action: light.turn_on
             data: 
               color_temp_kelvin: 10000
+              transition: 2
             target:
               entity_id: !input light_entity
       - conditions:
@@ -143,6 +144,7 @@ actions:
           - action: light.turn_on
             data: 
               color_temp_kelvin: 1000
+              transition: 2
             target:
               entity_id: !input light_entity
       - conditions:
