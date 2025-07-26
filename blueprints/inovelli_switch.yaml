@@ -22,6 +22,13 @@ blueprint:
       selector:
         entity:
           domain: script
+    adaptive_lighting_entity:
+      name: Adaptive Lighting Profile
+      description: "Select the Adaptive Lighting profile for the light entity, if applicable. Make sure not to select the Brightness, Color Temp, or Sleep Mode switches."
+      selector:
+        entity:
+          domain: switch
+          integration: adaptive_lighting
 triggers:
   - trigger: mqtt
     topic: !input mqtt_topic
@@ -138,5 +145,12 @@ actions:
               color_temp_kelvin: 1000
             target:
               entity_id: !input light_entity
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload == 'config_single' }}"
+        sequence:
+          - action: adaptive_lighting.apply
+            data:
+              entity_id: !input adaptive_lighting_entity
 mode: queued
 max: 10
