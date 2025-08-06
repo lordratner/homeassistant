@@ -2,7 +2,7 @@ blueprint:
   name: Zooz Switch Automation (Z-Wave JS)
   description: Provide on/off and dimming control for a smart light/bulb. You will need a script used for the dimming logic. 
   domain: automation
-  source_url: https://github.com/lordratner/homeassistant/blob/main/blueprints/zooz_switch.yaml
+  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/main/blueprints/zooz_switch.yaml
   input:
     switch_device:
       name: Zooz Switch Device
