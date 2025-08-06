@@ -1,251 +1,282 @@
 blueprint:
   name: Zooz Switch Automation (Z-Wave JS)
-  description: Provide on/off and dimming control for a smart light/bulb. You will need a script used for the dimming logic. 
+  description: Provide on/off and dimming control for a smart light/bulb. You will
+    need a script used for the dimming logic.
   domain: automation
   source_url: https://raw.githubusercontent.com/lordratner/homeassistant/main/blueprints/zooz_switch.yaml
   input:
     switch_device:
       name: Zooz Switch Device
-      description: "Select the Zooz Switch to control the lights."
+      description: Select the Zooz Switch to control the lights.
       selector:
         device:
           filter:
-            - integration: zwave_js
-              manufacturer: Zooz
+          - integration: zwave_js
+            manufacturer: Zooz
           entity:
-            - domain: switch
+          - domain:
+            - switch
+          multiple: false
     light_entity:
       name: Light Entity
-      description: "Select the light entity that will be controlled by the switch. Note: This does not create a Zigbee binding."
+      description: 'Select the light entity that will be controlled by the switch.
+        Note: This does not create a Zigbee binding.'
       selector:
         entity:
-          domain: light
+          domain:
+          - light
+          multiple: false
     dimming_script:
       name: Dimming Script
-      description: "The script use to control dimming the light. Called when the paddle is held up (brighter) or down (dimmer)."
+      description: The script use to control dimming the light. Called when the paddle
+        is held up (brighter) or down (dimmer).
       selector:
         entity:
-          domain: script
+          domain:
+          - script
+          multiple: false
 triggers:
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    value: 0
-    id: on_pressed
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 0
-    id: off_pressed
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    id: on_held
-    value: 2
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 2
-    id: off_held
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    id: on_released
-    value: 1
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 1
-    id: off_released
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    value: 3
-    id: on_pressed_2x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 3
-    id: off_pressed_2x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    value: 4
-    id: on_pressed_3x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 4
-    id: off_pressed_3x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    value: 5
-    id: on_pressed_4x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 5
-    id: off_pressed_4x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "001"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 001
-    trigger: device
-    value: 6
-    id: on_pressed_5x
-  - device_id: !input switch_device
-    domain: zwave_js
-    type: event.value_notification.central_scene
-    property: scene
-    property_key: "002"
-    endpoint: 0
-    command_class: 91
-    subtype: Endpoint 0 Scene 002
-    trigger: device
-    value: 6
-    id: off_pressed_5x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  value: 0
+  id: on_pressed
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 0
+  id: off_pressed
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  id: on_held
+  value: 2
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 2
+  id: off_held
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  id: on_released
+  value: 1
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 1
+  id: off_released
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  value: 3
+  id: on_pressed_2x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 3
+  id: off_pressed_2x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  value: 4
+  id: on_pressed_3x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 4
+  id: off_pressed_3x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  value: 5
+  id: on_pressed_4x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 5
+  id: off_pressed_4x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '001'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 001
+  trigger: device
+  value: 6
+  id: on_pressed_5x
+- device_id: !input switch_device
+  domain: zwave_js
+  type: event.value_notification.central_scene
+  property: scene
+  property_key: '002'
+  endpoint: 0
+  command_class: 91
+  subtype: Endpoint 0 Scene 002
+  trigger: device
+  value: 6
+  id: off_pressed_5x
 conditions: []
 actions:
-  - choose:
-      - conditions:
-          - condition: trigger
-            id:
-              - on_pressed
-        sequence:
-          - action: light.turn_on
-            metadata: {}
-            data: {}
-            target:
-              entity_id: !input light_entity
-        alias: On pressed once
-      - conditions:
-          - condition: trigger
-            id:
-              - off_pressed
-        sequence:
-          - action: light.turn_off
-            metadata: {}
-            data:
-              transition: 2
-            target:
-              entity_id: !input light_entity
-        alias: Off pressed once
-      - conditions:
-          - condition: trigger
-            id:
-              - on_held
-        sequence:
-          - action: script.turn_on
-            metadata: {}
-            data:
-              variables:
-                light_entity: !input light_entity
-                direction: up
-            target:
-              entity_id: !input dimming_script
-        alias: On Held
-      - conditions:
-          - condition: trigger
-            id:
-              - off_held
-        sequence:
-          - action: script.turn_on
-            metadata: {}
-            data:
-              variables:
-                light_entity: !input light_entity
-                direction: down
-            target:
-              entity_id: !input dimming_script
-        alias: Off Held
-      - conditions:
-          - condition: trigger
-            id:
-              - on_released
-              - off_released
-        sequence:
-          - action: script.turn_off
-            metadata: {}
-            data: {}
-            target:
-              entity_id: !input dimming_script
-        alias: Either Button Released
+- choose:
+  - conditions:
+    - condition: trigger
+      id:
+      - on_pressed
+    sequence:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: !input light_entity
+    alias: On pressed once
+  - conditions:
+    - condition: trigger
+      id:
+      - off_pressed
+    sequence:
+    - action: light.turn_off
+      metadata: {}
+      data:
+        transition: 2
+      target:
+        entity_id: !input light_entity
+    alias: Off pressed once
+  - conditions:
+    - condition: trigger
+      id:
+      - on_held
+    sequence:
+    - action: script.turn_on
+      metadata: {}
+      data:
+        variables:
+          light_entity: !input light_entity
+          direction: up
+      target:
+        entity_id: !input dimming_script
+    alias: On Held
+  - conditions:
+    - condition: trigger
+      id:
+      - off_held
+    sequence:
+    - action: script.turn_on
+      metadata: {}
+      data:
+        variables:
+          light_entity: !input light_entity
+          direction: down
+      target:
+        entity_id: !input dimming_script
+    alias: Off Held
+  - conditions:
+    - condition: trigger
+      id:
+      - on_released
+      - off_released
+    sequence:
+    - action: script.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: !input dimming_script
+    alias: Either Button Released
+  - conditions:
+    - condition: trigger
+      id:
+        - on_pressed_2x
+    sequence:
+      - action: light.turn_on
+        data:
+          brightness_pct: 100
+          transition: 2
+        target:
+          entity_id: !input light_entity
+  - conditions:
+    - condition: trigger
+      id:
+        - off_pressed_2x
+    sequence:
+      - action: light.turn_on
+        data:
+          brightness_pct: 20
+          transition: 2
+        target:
+          entity_id: !input light_entity    
 mode: queued
 max: 10
