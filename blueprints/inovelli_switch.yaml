@@ -1,22 +1,18 @@
 blueprint:
-  name: Zooz Switch Automation (Z-Wave JS)
+  name: Inovelli Switch Automation (Zigbee2MQTT)
   description: Provide on/off and dimming control for a smart light/bulb. You will
-    need a script used for the dimming logic.
+    need the MQTT topic for the switch as well as the script used for the dimming
+    logic.
   domain: automation
-  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/main/blueprints/zooz_switch.yaml
+  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/main/blueprints/inovelli_switch.yaml
   input:
-    switch_device:
-      name: Zooz Switch Device
-      description: Select the Zooz Switch to control the lights.
+    mqtt_topic:
+      name: Switch MQTT Topic
+      description: The full MQTT topic where switch actions are published. Uses the
+        Friendly Name in Zigbee2MQTT for the device
       selector:
-        device:
-          filter:
-          - integration: zwave_js
-            manufacturer: Zooz
-          entity:
-          - domain:
-            - switch
-          multiple: false
+        text: {}
+      default: zigbee2mqtt/SWITCH TOPIC HERE/action
     light_entity:
       name: Light Entity
       description: 'Select the light entity that will be controlled by the switch.
@@ -35,231 +31,77 @@ blueprint:
           domain:
           - script
           multiple: false
+    adaptive_lighting_entity:
+      name: Adaptive Lighting Profile
+      description: Select the Adaptive Lighting profile for the light entity, if applicable.
+        Make sure not to select the Brightness, Color Temp, or Sleep Mode switches.
+      selector:
+        entity:
+          domain:
+          - switch
+          integration: adaptive_lighting
+          multiple: false
 triggers:
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  value: 0
-  id: on_pressed
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 0
-  id: off_pressed
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  id: on_held
-  value: 2
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 2
-  id: off_held
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  id: on_released
-  value: 1
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 1
-  id: off_released
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  value: 3
-  id: on_pressed_2x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 3
-  id: off_pressed_2x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  value: 4
-  id: on_pressed_3x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 4
-  id: off_pressed_3x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  value: 5
-  id: on_pressed_4x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 5
-  id: off_pressed_4x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '001'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 001
-  trigger: device
-  value: 6
-  id: on_pressed_5x
-- device_id: !input switch_device
-  domain: zwave_js
-  type: event.value_notification.central_scene
-  property: scene
-  property_key: '002'
-  endpoint: 0
-  command_class: 91
-  subtype: Endpoint 0 Scene 002
-  trigger: device
-  value: 6
-  id: off_pressed_5x
-conditions: []
+- trigger: mqtt
+  topic: !input mqtt_topic
+conditions:
+- condition: template
+  value_template: '{{ trigger.payload is not none and trigger.payload | length > 0
+    }}'
+  enabled: true
 actions:
 - choose:
   - conditions:
-    - condition: trigger
-      id:
-      - on_pressed
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_single'' }}'
     sequence:
     - action: light.turn_on
-      metadata: {}
       data: {}
       target:
         entity_id: !input light_entity
-    alias: On pressed once
   - conditions:
-    - condition: trigger
-      id:
-      - off_pressed
+    - condition: template
+      value_template: '{{ trigger.payload == ''down_single'' }}'
     sequence:
     - action: light.turn_off
-      metadata: {}
       data:
         transition: 2
       target:
         entity_id: !input light_entity
-    alias: Off pressed once
   - conditions:
-    - condition: trigger
-      id:
-      - on_held
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_held'' }}'
     sequence:
-    - action: script.turn_on
-      metadata: {}
+    - target:
+        entity_id: !input dimming_script
       data:
         variables:
           light_entity: !input light_entity
           direction: up
-      target:
-        entity_id: !input dimming_script
-    alias: On Held
+      action: script.turn_on
   - conditions:
-    - condition: trigger
-      id:
-      - off_held
+    - condition: template
+      value_template: '{{ trigger.payload == ''down_held'' }}'
     sequence:
-    - action: script.turn_on
-      metadata: {}
+    - target:
+        entity_id: !input dimming_script
       data:
         variables:
           light_entity: !input light_entity
           direction: down
-      target:
-        entity_id: !input dimming_script
-    alias: Off Held
+      action: script.turn_on
   - conditions:
-    - condition: trigger
-      id:
-      - on_released
-      - off_released
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_release'' or trigger.payload ==
+        ''down_release'' }}'
     sequence:
-    - action: script.turn_off
-      metadata: {}
-      data: {}
-      target:
+    - target:
         entity_id: !input dimming_script
-    alias: Either Button Released
+      action: script.turn_off
+      data: {}
   - conditions:
-    - condition: trigger
-      id:
-      - on_pressed_2x
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_double'' }}'
     sequence:
     - action: light.turn_on
       data:
@@ -268,9 +110,8 @@ actions:
       target:
         entity_id: !input light_entity
   - conditions:
-    - condition: trigger
-      id:
-      - off_pressed_2x
+    - condition: template
+      value_template: '{{ trigger.payload == ''down_double'' }}'
     sequence:
     - action: light.turn_on
       data:
@@ -279,33 +120,30 @@ actions:
       target:
         entity_id: !input light_entity
   - conditions:
-    - condition: trigger
-      id:
-      - on_pressed_3x
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_triple'' }}'
     sequence:
     - action: script.turn_on
       data:
         variables:
           light: !input light_entity
-          mode: on
+          mode: true
       target:
         entity_id: script.night_light_controller
   - conditions:
-    - condition: trigger
-      id:
-      - off_pressed_3x
+    - condition: template
+      value_template: '{{ trigger.payload == ''down_triple'' }}'
     sequence:
     - action: script.turn_on
       data:
         variables:
           light: !input light_entity
-          mode: off
+          mode: false
       target:
         entity_id: script.night_light_controller
   - conditions:
-    - condition: trigger
-      id:
-      - on_pressed_4x
+    - condition: template
+      value_template: '{{ trigger.payload == ''up_quadruple'' }}'
     sequence:
     - action: light.turn_on
       data:
@@ -314,9 +152,8 @@ actions:
       target:
         entity_id: !input light_entity
   - conditions:
-    - condition: trigger
-      id:
-      - off_pressed_4x
+    - condition: template
+      value_template: '{{ trigger.payload == ''down_quadruple'' }}'
     sequence:
     - action: light.turn_on
       data:
@@ -325,17 +162,8 @@ actions:
       target:
         entity_id: !input light_entity
   - conditions:
-    - condition: trigger
-      id:
-      - on_pressed_5x
-    sequence:
-    - action: adaptive_lighting.apply
-      data:
-        entity_id: !input adaptive_lighting_entity
-  - conditions:
-    - condition: trigger
-      id:
-      - off_pressed_5x
+    - condition: template
+      value_template: '{{ trigger.payload == ''config_single'' }}'
     sequence:
     - action: adaptive_lighting.apply
       data:
