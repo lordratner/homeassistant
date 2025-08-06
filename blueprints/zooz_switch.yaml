@@ -247,27 +247,5 @@ actions:
             target:
               entity_id: !input dimming_script
         alias: Either Button Released
-      - conditions:
-        - condition: trigger
-          id:
-            - on_pressed_2x
-        sequence:
-          - action: light.turn_on
-            data:
-              brightness_pct: 100
-              transition: 2
-            target:
-              entity_id: !input light_entity
-      - conditions:
-        - condition: trigger
-          id:
-            - off_pressed_2x
-        sequence:
-          - action: light.turn_on
-            data:
-              brightness_pct: 20
-              transition: 2
-            target:
-              entity_id: !input light_entity
 mode: queued
 max: 10
