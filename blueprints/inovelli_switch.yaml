@@ -94,6 +94,7 @@ actions:
           - action: light.turn_on
             data: 
               brightness_pct: 100
+              transition: 2
             target:
               entity_id: !input light_entity
       - conditions:
@@ -103,6 +104,7 @@ actions:
           - action: light.turn_on
             data: 
               brightness_pct: 20
+              transition: 2
             target:
               entity_id: !input light_entity
       - conditions:
