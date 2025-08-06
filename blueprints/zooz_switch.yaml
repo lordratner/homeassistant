@@ -35,6 +35,16 @@ blueprint:
           domain:
           - script
           multiple: false
+    adaptive_lighting_entity:
+      name: Adaptive Lighting Profile
+      description: Select the Adaptive Lighting profile for the light entity, if applicable.
+        Make sure not to select the Brightness, Color Temp, or Sleep Mode switches.
+      selector:
+        entity:
+          domain:
+          - switch
+          integration: adaptive_lighting
+          multiple: false
 triggers:
 - device_id: !input switch_device
   domain: zwave_js
