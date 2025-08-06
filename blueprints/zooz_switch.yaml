@@ -93,6 +93,94 @@ triggers:
     trigger: device
     value: 1
     id: off_released
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "001"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 3
+    id: on_pressed_2x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "002"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+    value: 3
+    id: off_pressed_2x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "001"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 4
+    id: on_pressed_3x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "002"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+    value: 4
+    id: off_pressed_3x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "001"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 5
+    id: on_pressed_4x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "002"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+    value: 5
+    id: off_pressed_4x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "001"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 6
+    id: on_pressed_5x
+  - device_id: !input switch_device
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: "002"
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+    value: 6
+    id: off_pressed_5x
 conditions: []
 actions:
   - choose:
@@ -159,5 +247,27 @@ actions:
             target:
               entity_id: !input dimming_script
         alias: Either Button Released
+        - conditions:
+          - condition: trigger
+            id:
+              - on_pressed_2x
+        sequence:
+          - action: light.turn_on
+            data:
+              brightness_pct: 100
+              transition: 2
+            target:
+              entity_id: !input light_entity
+        - conditions:
+          - condition: trigger
+            id:
+              - off_pressed_2x
+        sequence:
+          - action: light.turn_on
+            data:
+              brightness_pct: 20
+              transition: 2
+            target:
+              entity_id: !input light_entity
 mode: queued
 max: 10
