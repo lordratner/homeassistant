@@ -22,6 +22,11 @@ blueprint:
           domain:
           - light
           multiple: false
+    room:
+      name: Room
+      description: What room the light is in (used for night mode)
+      selector:
+        text: null
     dimming_script:
       name: Dimming Script
       description: The script use to control dimming the light. Called when the paddle
@@ -123,24 +128,18 @@ actions:
     - condition: template
       value_template: '{{ trigger.payload == ''up_triple'' }}'
     sequence:
-    - action: script.turn_on
+    - action: script.night_mode_controller
       data:
-        variables:
-          light: !input light_entity
-          mode: true
-      target:
-        entity_id: script.night_light_controller
+        room: "{{ room }}"
+        command: "On"
   - conditions:
     - condition: template
       value_template: '{{ trigger.payload == ''down_triple'' }}'
     sequence:
-    - action: script.turn_on
+    - action: script.night_mode_controller
       data:
-        variables:
-          light: !input light_entity
-          mode: false
-      target:
-        entity_id: script.night_light_controller
+        room: "{{ room }}"
+        command: "Off"
   - conditions:
     - condition: template
       value_template: '{{ trigger.payload == ''up_quadruple'' }}'
