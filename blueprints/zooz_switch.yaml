@@ -26,6 +26,11 @@ blueprint:
           domain:
           - light
           multiple: false
+    room:
+      name: Room
+      description: What room the light is in (used for night mode)
+      selector:
+        text: null          
     dimming_script:
       name: Dimming Script
       description: The script use to control dimming the light. Called when the paddle
@@ -293,25 +298,19 @@ actions:
       id:
       - on_pressed_3x
     sequence:
-    - action: script.turn_on
+    - action: script.night_mode_controller
       data:
-        variables:
-          light: !input light_entity
-          mode: on
-      target:
-        entity_id: script.night_light_controller
+        room: !input room
+        command: "On"
   - conditions:
     - condition: trigger
       id:
       - off_pressed_3x
     sequence:
-    - action: script.turn_on
+    - action: script.night_mode_controller
       data:
-        variables:
-          light: !input light_entity
-          mode: off
-      target:
-        entity_id: script.night_light_controller
+        room: !input room
+        command: "Off"
   - conditions:
     - condition: trigger
       id:
