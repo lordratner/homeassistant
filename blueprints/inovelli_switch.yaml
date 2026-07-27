@@ -61,7 +61,8 @@ actions:
       value_template: '{{ trigger.payload == ''up_single'' }}'
     sequence:
     - action: light.turn_on
-      data: {}
+      data:
+        transition: 2
       target:
         entity_id: !input light_entity
   - conditions:
