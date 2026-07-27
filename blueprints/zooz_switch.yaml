@@ -215,7 +215,8 @@ actions:
     sequence:
     - action: light.turn_on
       metadata: {}
-      data: {}
+      data:
+        transition: 2
       target:
         entity_id: !input light_entity
     alias: On pressed once
