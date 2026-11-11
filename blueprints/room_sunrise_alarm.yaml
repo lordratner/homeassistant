@@ -1,0 +1,323 @@
+blueprint:
+  name: Sunrise Alarm with Music
+  description: "One restartable script per room. Duration is the only call-time field: 1, 5 or 10
+    minutes before the alarm target. Room devices, music and all light/audio levels are configured
+    in the script editor. After the target, volume rises for one minute, then lighting rises for two
+    minutes. Optional device failures do not stop the other timeline."
+  domain: script
+  author: lordratner
+  source_url: https://raw.githubusercontent.com/lordratner/homeassistant/main/blueprints/room_sunrise_alarm.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    room_devices:
+      name: Room devices and music
+      input:
+        light_entity:
+          name: Sunrise light (optional)
+          description: Leave empty for audio only. Select a color-temperature light or compatible group.
+          default: ""
+          selector:
+            entity:
+              filter:
+                domain: light
+        speaker_entity:
+          name: Speaker (optional)
+          description: Leave empty for lighting only.
+          default: ""
+          selector:
+            entity:
+              filter:
+                domain: media_player
+        music_actions:
+          name: Start wake-up music
+          description: Replace white noise on the selected speaker. Keep these actions short; do not add
+            delays or change volume. No speaker means these actions are skipped.
+          default: []
+          selector:
+            action: {}
+    light_settings:
+      name: Lighting levels
+      input:
+        minimum_brightness:
+          name: Minimum brightness
+          default: 1
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+        minimum_kelvin:
+          name: Minimum color temperature
+          default: 2000
+          selector:
+            number:
+              min: 1000
+              max: 10000
+              step: 1
+              unit_of_measurement: K
+        intermediate_brightness:
+          name: Intermediate brightness
+          default: 20
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+        intermediate_kelvin:
+          name: Intermediate color temperature
+          default: 2700
+          selector:
+            number:
+              min: 1000
+              max: 10000
+              step: 1
+              unit_of_measurement: K
+        final_brightness:
+          name: Final brightness
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+        final_kelvin:
+          name: Final color temperature
+          default: 5000
+          selector:
+            number:
+              min: 1000
+              max: 10000
+              step: 1
+              unit_of_measurement: K
+    audio_settings:
+      name: Audio levels
+      input:
+        intermediate_volume:
+          name: Intermediate volume
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+        final_volume:
+          name: Final volume
+          default: 80
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+mode: restart
+max_exceeded: silent
+fields:
+  duration:
+    name: Wake-up lead-in
+    description: Minutes before the alarm target. Total runtime is this value plus 3 minutes.
+    required: true
+    example: "5"
+    selector:
+      select:
+        options:
+          - label: 1 minute
+            value: "1"
+          - label: 5 minutes
+            value: "5"
+          - label: 10 minutes
+            value: "10"
+sequence:
+  - alias: Only 1, 5 or 10 minute lead-ins are accepted
+    if:
+      - "{{ duration | default('') | string not in ['1', '5', '10'] }}"
+    then:
+      - stop: Duration must be 1, 5 or 10 minutes
+        error: true
+  - alias: Load room configuration (not call-time fields)
+    variables:
+      sunrise_light: !input light_entity
+      room_speaker: !input speaker_entity
+      configured_minimum_brightness: !input minimum_brightness
+      configured_minimum_kelvin: !input minimum_kelvin
+      configured_intermediate_brightness: !input intermediate_brightness
+      configured_intermediate_kelvin: !input intermediate_kelvin
+      configured_final_brightness: !input final_brightness
+      configured_final_kelvin: !input final_kelvin
+      configured_intermediate_volume: !input intermediate_volume
+      configured_final_volume: !input final_volume
+  - if:
+      - "{{ not sunrise_light and not room_speaker }}"
+    then:
+      - stop: Configure at least a light or a speaker
+        error: true
+  - alias: Capture original audio level and fixed phase deadlines
+    variables:
+      run_started: "{{ as_timestamp(now()) }}"
+      lead_seconds: "{{ duration | int * 60 }}"
+      reset_seconds: "{{ 0 if duration | int == 1 else 60 }}"
+      rise_seconds: "{{ 15 if duration | int == 1 else 60 }}"
+      rise_steps: "{{ 5 if duration | int == 1 else 6 }}"
+      rise_step_seconds: "{{ 3 if duration | int == 1 else 10 }}"
+      speaker_start: "{{ [[state_attr(room_speaker, 'volume_level') | float(0), 0] | max, 1] | min if
+        room_speaker else 0 }}"
+      kelvin_floor: "{{ state_attr(sunrise_light, 'min_color_temp_kelvin') | int(1000) if sunrise_light
+        else 1000 }}"
+      kelvin_ceiling: "{{ state_attr(sunrise_light, 'max_color_temp_kelvin') | int(10000) if sunrise_light
+        else 10000 }}"
+      minimum_brightness: "{{ [[configured_minimum_brightness | float, 1] | max, 100] | min }}"
+      minimum_kelvin: "{{ [[configured_minimum_kelvin | int, kelvin_floor] | max, kelvin_ceiling] | min }}"
+      intermediate_brightness: "{{ [[configured_intermediate_brightness | float, 1] | max, 100] | min }}"
+      intermediate_kelvin: "{{ [[configured_intermediate_kelvin | int, kelvin_floor] | max, kelvin_ceiling] | min }}"
+      final_brightness: "{{ [[configured_final_brightness | float, 1] | max, 100] | min }}"
+      final_kelvin: "{{ [[configured_final_kelvin | int, kelvin_floor] | max, kelvin_ceiling] | min }}"
+      intermediate_volume: "{{ [[configured_intermediate_volume | float / 100, 0] | max, 1] | min }}"
+      final_volume: "{{ [[configured_final_volume | float / 100, 0] | max, 1] | min }}"
+      rise_started: "{{ run_started + reset_seconds }}"
+      alarm_at: "{{ run_started + lead_seconds }}"
+  - alias: Phase 1 - reset light and fade existing audio to zero
+    parallel:
+      - sequence:
+          - alias: Reset light; transition runs on the light
+            if:
+              - '{{ sunrise_light != "" }}'
+            then:
+              - action: light.turn_on
+                target:
+                  entity_id: "{{ sunrise_light }}"
+                data:
+                  brightness_pct: "{{ minimum_brightness }}"
+                  color_temp_kelvin: "{{ minimum_kelvin }}"
+                  transition: "{{ 0 if reset_seconds == 0 else 10 }}"
+                continue_on_error: true
+      - sequence:
+          - alias: Fade from the captured starting volume, never from reported previous steps
+            if:
+              - '{{ room_speaker != "" }}'
+            then:
+              - choose:
+                  - conditions:
+                      - "{{ reset_seconds == 0 }}"
+                    sequence:
+                      - action: media_player.volume_set
+                        target:
+                          entity_id: "{{ room_speaker }}"
+                        data:
+                          volume_level: "{{ (0) | round(6) }}"
+                        continue_on_error: true
+                default:
+                  - repeat:
+                      count: 6
+                      sequence:
+                        - delay:
+                            seconds: "{{ [run_started + repeat.index * 10 - as_timestamp(now()), 0] | max }}"
+                        - action: media_player.volume_set
+                          target:
+                            entity_id: "{{ room_speaker }}"
+                          data:
+                            volume_level: "{{ (speaker_start + (0 - speaker_start) * repeat.index / 6) | round(6) }}"
+                          continue_on_error: true
+  - delay:
+      seconds: "{{ [rise_started - as_timestamp(now()), 0] | max }}"
+  - alias: Phase 2 - music and light rise to intermediate levels
+    parallel:
+      - sequence:
+          - alias: Rise lighting independently of music startup
+            if:
+              - '{{ sunrise_light != "" }}'
+            then:
+              - repeat:
+                  count: "{{ rise_steps }}"
+                  sequence:
+                    - delay:
+                        seconds: "{{ [rise_started + (repeat.index - 1) * rise_step_seconds - as_timestamp(now()), 0] | max
+                          }}"
+                    - action: light.turn_on
+                      target:
+                        entity_id: "{{ sunrise_light }}"
+                      data:
+                        brightness_pct: "{{ (minimum_brightness + (intermediate_brightness - minimum_brightness) *
+                          repeat.index / rise_steps) | round(2) }}"
+                        color_temp_kelvin: "{{ (minimum_kelvin + (intermediate_kelvin - minimum_kelvin) * repeat.index /
+                          rise_steps) | round(0) | int }}"
+                        transition: "{{ rise_step_seconds }}"
+                      continue_on_error: true
+      - sequence:
+          - alias: Start music at zero and step toward intermediate volume
+            if:
+              - '{{ room_speaker != "" }}'
+            then:
+              - action: media_player.volume_set
+                target:
+                  entity_id: "{{ room_speaker }}"
+                data:
+                  volume_level: "{{ (0) | round(6) }}"
+                continue_on_error: true
+              - alias: Replace white noise with configured wake-up music
+                sequence: !input music_actions
+                continue_on_error: true
+              - repeat:
+                  count: "{{ rise_steps }}"
+                  sequence:
+                    - delay:
+                        seconds: "{{ [rise_started + repeat.index * rise_step_seconds - as_timestamp(now()), 0] | max }}"
+                    - action: media_player.volume_set
+                      target:
+                        entity_id: "{{ room_speaker }}"
+                      data:
+                        volume_level: "{{ (intermediate_volume * repeat.index / rise_steps) | round(6) }}"
+                      continue_on_error: true
+  - alias: Phase 3 - hold until the alarm target (45 seconds, 3 minutes or 8 minutes)
+    delay:
+      seconds: "{{ [alarm_at - as_timestamp(now()), 0] | max }}"
+  - alias: Phase 4 - one minute from intermediate to final volume
+    parallel:
+      - sequence:
+          - delay:
+              seconds: "{{ [alarm_at + 60 - as_timestamp(now()), 0] | max }}"
+      - sequence:
+          - alias: Final volume ramp
+            if:
+              - '{{ room_speaker != "" }}'
+            then:
+              - repeat:
+                  count: 6
+                  sequence:
+                    - delay:
+                        seconds: "{{ [alarm_at + repeat.index * 10 - as_timestamp(now()), 0] | max }}"
+                    - action: media_player.volume_set
+                      target:
+                        entity_id: "{{ room_speaker }}"
+                      data:
+                        volume_level: "{{ (intermediate_volume + (final_volume - intermediate_volume) * repeat.index / 6) |
+                          round(6) }}"
+                      continue_on_error: true
+  - alias: Phase 5 - two minutes from intermediate to final lighting
+    parallel:
+      - sequence:
+          - delay:
+              seconds: "{{ [alarm_at + 180 - as_timestamp(now()), 0] | max }}"
+      - sequence:
+          - alias: Final lighting ramp; audio stays at final volume
+            if:
+              - '{{ sunrise_light != "" }}'
+            then:
+              - repeat:
+                  count: 12
+                  sequence:
+                    - delay:
+                        seconds: "{{ [alarm_at + 60 + (repeat.index - 1) * 10 - as_timestamp(now()), 0] | max }}"
+                    - action: light.turn_on
+                      target:
+                        entity_id: "{{ sunrise_light }}"
+                      data:
+                        brightness_pct: "{{ (intermediate_brightness + (final_brightness - intermediate_brightness) *
+                          repeat.index / 12) | round(2) }}"
+                        color_temp_kelvin: "{{ (intermediate_kelvin + (final_kelvin - intermediate_kelvin) * repeat.index /
+                          12) | round(0) | int }}"
+                        transition: "{{ 10 }}"
+                      continue_on_error: true
